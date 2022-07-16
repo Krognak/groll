@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# TODO handle "cats"
 # TODO argparse
 
 import logging
@@ -24,6 +23,7 @@ OPS = {
 
 def roll(die: str) -> str:
     num, sides = die.split("d")
+    # because we don't always write 1d6...
     if num:
         num = int(num)
     else:
@@ -35,7 +35,7 @@ def roll(die: str) -> str:
     return str(total)
 
 
-def sub(args: list, pattern: str, func: Callable) -> list:
+def sub(args: list, pattern: list, func: Callable) -> list:
     subbed = []
     for arg in args:
         m = re.match(pattern, arg)
@@ -43,35 +43,41 @@ def sub(args: list, pattern: str, func: Callable) -> list:
             subbed.append(func(m.group(0)))
         else:
             subbed.append(arg)
+    logging.info(f"sub made using {func.__name__} -> {subbed}")
     return subbed
 
 
-def eval_roll(args: list) -> int:
-    x, op, y, *rest = args
-    while len(rest) > 0:
+def eval_roll(args: list) -> None:
+    try:
+        x, op, y, *rest = args
+        while len(rest) > 0:
+            x = OPS[op](x, y)
+            op, y, *rest = rest
         x = OPS[op](x, y)
-        op, y, *rest = rest
-    x = OPS[op](x, y)
-    return x
+        logging.info(f"answer = {x}")
+        return x
+    except Exception as e:
+        logging.critical(e, exc_info=True)
 
 
 def tidy_args(args: list) -> list:
     args = " ".join(args)
+    # finds "sticky" operators and spaces them out
     args = re.sub(r"[\+-/\*]", lambda x: f" {x.group(0)} ", args)
     args = args.split()
+    logging.info(f"tidied args = {args}")
     return args
 
 
+# entrypoint for groll to be specified in pyproject.toml
 def cli() -> None:
+    logging.info("Starting...")
     args = tidy_args(sys.argv[1:])
-    logging.info(f"tidied args = {args}")
     args = sub(args, r"\d*d\d+", roll)
-    logging.info(f"with dice subbed = {args}")
     args = sub(args, r"\d+", int)
-    logging.info(f"with ints subbed = {args}")
-    result = eval_roll(args)
-    logging.info(f"answer = {result}")
+    eval_roll(args)
 
 
 if __name__ == "__main__":
     cli()
+    logging.info("...Finished")
