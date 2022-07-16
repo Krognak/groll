@@ -5,6 +5,7 @@ import logging
 import random
 import re
 import sys
+import textwrap
 
 from typing import Callable
 
@@ -58,7 +59,7 @@ def eval_roll(args: list) -> None:
         print("\t-> ", x)
     except Exception as e:
         logging.debug(e, exc_info=True)
-        print("\t!!! unable to parse input, type groll -h for syntax help !!!")
+        print("\t!!! unable to parse input, type groll -h for help !!!")
 
 
 def tidy_args(args: list) -> list:
@@ -86,12 +87,37 @@ def handle_flags(flags: list) -> None:
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description="A helpful, dice rolling goblin for your command line!"
+        prog="groll",
+        usage="groll [options] [dice ...]",
+        formatter_class=argparse.RawTextHelpFormatter,
+        description=textwrap.dedent(
+            """\
+            A helpful, dice rolling goblin for your command line!
+
+        Syntax:
+          dice = [num]d[sides] e.g. 2d36
+          supported operators = +, -, *, /
+          modifiers = integer numbers"""
+        ),
+        epilog=textwrap.dedent(
+            """\
+        Examples:
+          $ groll <- rolls 1d20 when supplied with no args
+          $ groll 2d6 + 2 <- rolls 2d6 and adds 2 to the result
+          $ groll 1d4 + 2d10 / 2 <- adds a d4 to a 2d10 and halves the result"""
+        ),
     )
-    parser.add_argument("dice", nargs="*")
-    parser.add_argument("-l", "--logging", action="store_true")
+    parser.add_argument("dice", nargs="*", help="dice and modifiers")
     parser.add_argument(
-        "-v", "--version", action="store_const", const="version", dest="flags"
+        "-l", "--logging", action="store_true", help="enable debugging messages"
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_const",
+        const="version",
+        dest="flags",
+        help="display version number and exit",
     )
     return parser
 
