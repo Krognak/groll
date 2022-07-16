@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-# TODO refactor sub into 1 function
 # TODO handle "cats"
 # TODO argparse
 
@@ -14,11 +13,6 @@ from typing import Callable
 __version__ = "0.1.0"
 
 logging.basicConfig(level=logging.DEBUG)
-
-re.DOTALL = True
-
-DICE_SYNTAX = r"\d*d\d+"
-MOD_SYNTAX = r"\d+"
 
 OPS = {
     "+": lambda x, y: x + y,
@@ -61,14 +55,19 @@ def eval_roll(args: list) -> int:
     return x
 
 
-def cli() -> None:
-    args = " ".join(sys.argv[1:])
+def tidy_args(args: list) -> list:
+    args = " ".join(args)
     args = re.sub(r"[\+-/\*]", lambda x: f" {x.group(0)} ", args)
     args = args.split()
+    return args
+
+
+def cli() -> None:
+    args = tidy_args(sys.argv[1:])
     logging.info(f"tidied args = {args}")
-    args = sub(args, DICE_SYNTAX, roll)
+    args = sub(args, r"\d*d\d+", roll)
     logging.info(f"with dice subbed = {args}")
-    args = sub(args, MOD_SYNTAX, int)
+    args = sub(args, r"\d+", int)
     logging.info(f"with ints subbed = {args}")
     result = eval_roll(args)
     logging.info(f"answer = {result}")
