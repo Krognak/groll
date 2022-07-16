@@ -9,6 +9,8 @@ import random
 import re
 import sys
 
+from typing import Callable
+
 __version__ = "0.1.0"
 
 logging.basicConfig(level=logging.DEBUG)
@@ -37,34 +39,18 @@ def roll(die: str) -> str:
     return str(total)
 
 
-def sub_dice(args: list) -> list:
-    """Substitute roll results into args and seperate any "sticky" operators"""
+def sub(args: list, pattern: str, func: Callable) -> list:
     subbed = []
     for arg in args:
-        m = re.match(DICE_SYNTAX, arg)
+        m = re.match(pattern, arg)
         if m:
-            mdict = m.groupdict()
-            if mdict["pre"]:
-                subbed.append(mdict["pre"])
-            subbed.append(roll(mdict["die"]))
-            if mdict["post"]:
-                subbed.append(mdict["post"])
-        else:
-            subbed.append(arg)
-    return subbed
-
-
-def sub_int(args: list) -> list:
-    subbed = []
-    for arg in args:
-        m = re.match(MOD_SYNTAX, arg)
-        if m:
-            mdict = m.groupdict()
-            if mdict["pre"]:
-                subbed.append(mdict["pre"])
-            subbed.append(int(mdict["mod"]))
-            if mdict["post"]:
-                subbed.append(mdict["post"])
+            pre, target, post = m.groups()
+            print(pre, target, post)
+            if pre:
+                subbed.append(pre)
+            subbed.append(func(target))
+            if post:
+                subbed.append(post)
         else:
             subbed.append(arg)
     return subbed
@@ -82,9 +68,9 @@ def eval_roll(args: list) -> int:
 def cli() -> None:
     args = sys.argv[1:]
     logging.info(f"args supplied = {args}")
-    args = sub_dice(args)
+    args = sub(args, DICE_SYNTAX, roll)
     logging.info(f"with dice subbed = {args}")
-    args = sub_int(args)
+    args = sub(args, MOD_SYNTAX, int)
     logging.info(f"with ints subbed = {args}")
     result = eval_roll(args)
     logging.info(f"answer = {result}")
