@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-# TODO argparse
-
+import argparse
 import logging
 import random
 import re
@@ -10,8 +9,6 @@ import sys
 from typing import Callable
 
 __version__ = "0.1.0"
-
-logging.basicConfig(level=logging.DEBUG)
 
 OPS = {
     "+": lambda x, y: x + y,
@@ -43,21 +40,25 @@ def sub(args: list, pattern: list, func: Callable) -> list:
             subbed.append(func(m.group(0)))
         else:
             subbed.append(arg)
-    logging.info(f"sub made using {func.__name__} -> {subbed}")
+    logging.debug(f"sub made using {func.__name__} -> {subbed}")
     return subbed
 
 
 def eval_roll(args: list) -> None:
     try:
-        x, op, y, *rest = args
-        while len(rest) > 0:
+        if len(args) == 1:
+            x = args[0]
+        else:
+            x, op, y, *rest = args
+            while len(rest) > 0:
+                x = OPS[op](x, y)
+                op, y, *rest = rest
             x = OPS[op](x, y)
-            op, y, *rest = rest
-        x = OPS[op](x, y)
-        logging.info(f"answer = {x}")
-        return x
+            logging.debug(f"answer = {x}")
+        print("\t-> ", x)
     except Exception as e:
-        logging.critical(e, exc_info=True)
+        logging.debug(e, exc_info=True)
+        print("\t!!! unable to parse input, type groll -h for syntax help !!!")
 
 
 def tidy_args(args: list) -> list:
@@ -65,19 +66,53 @@ def tidy_args(args: list) -> list:
     # finds "sticky" operators and spaces them out
     args = re.sub(r"[\+-/\*]", lambda x: f" {x.group(0)} ", args)
     args = args.split()
-    logging.info(f"tidied args = {args}")
+    logging.debug(f"tidied args = {args}")
     return args
+
+
+def handle_dice(dice: list) -> list:
+    dice = tidy_args(dice)
+    dice = sub(dice, r"\d*d\d+", roll)
+    dice = sub(dice, r"\d+", int)
+    return dice
+
+
+def handle_flags(flags: list) -> None:
+    if "version" in flags:
+        print(f"\tgroll v{__version__}")
+        logging.debug("printing version and exiting")
+        sys.exit()
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        description="A helpful, dice rolling goblin for your command line!"
+    )
+    parser.add_argument("dice", nargs="*")
+    parser.add_argument("-l", "--logging", action="store_true")
+    parser.add_argument(
+        "-v", "--version", action="store_const", const="version", dest="flags"
+    )
+    return parser
 
 
 # entrypoint for groll to be specified in pyproject.toml
 def cli() -> None:
-    logging.info("Starting...")
-    args = tidy_args(sys.argv[1:])
-    args = sub(args, r"\d*d\d+", roll)
-    args = sub(args, r"\d+", int)
-    eval_roll(args)
+    parser = get_parser()
+    args = parser.parse_args()
+    if args.logging:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+    logging.debug("Starting...")
+    if args.flags:
+        handle_flags(args.flags)
+    if not args.dice:
+        args.dice = ["d20"]
+    dice = handle_dice(args.dice)
+    logging.debug("...Finished")
+    eval_roll(dice)
 
 
 if __name__ == "__main__":
     cli()
-    logging.info("...Finished")
