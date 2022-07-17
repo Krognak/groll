@@ -1,5 +1,7 @@
 # Groll
 
+<img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/groll">
+
 *A helpful, dice rolling goblin for your command line!*
 
 ```bash
@@ -47,7 +49,8 @@ Examples:
 
 ## TODO
 
-- [ ] pyproject.toml
-- [ ] nox
+- [X] pyproject.toml
+- [X] tox 
+- [ ] testing
 - [ ] crits
 - [ ] exploding dice
