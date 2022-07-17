@@ -7,6 +7,7 @@ import re
 import sys
 import textwrap
 
+from groll import __version__
 from typing import Callable
 
 OPS = {
