@@ -1,5 +1,7 @@
 # Groll
 
+<img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/groll">
+
 *A helpful, dice rolling goblin for your command line!*
 
 ```bash
