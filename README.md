@@ -47,4 +47,7 @@
 
 ## TODO
 
-- [ ] bonk
+- [ ] pyproject.toml
+- [ ] nox
+- [ ] crits
+- [ ] exploding dice

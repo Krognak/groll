@@ -9,8 +9,6 @@ import textwrap
 
 from typing import Callable
 
-__version__ = "0.1.0"
-
 OPS = {
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
@@ -56,10 +54,10 @@ def eval_roll(args: list) -> None:
                 op, y, *rest = rest
             x = OPS[op](x, y)
             logging.debug(f"answer = {x}")
-        print("\t-> ", x)
+        print("  -> ", x)
     except Exception as e:
         logging.debug(e, exc_info=True)
-        print("\t!!! unable to parse input, type groll -h for help !!!")
+        print("  !!! unable to parse input, type groll -h for help !!!")
 
 
 def tidy_args(args: list) -> list:
@@ -80,7 +78,7 @@ def handle_dice(dice: list) -> list:
 
 def handle_flags(flags: list) -> None:
     if "version" in flags:
-        print(f"\tgroll v{__version__}")
+        print(f"  groll v{__version__}")
         logging.debug("printing version and exiting")
         sys.exit()
 
