@@ -49,7 +49,8 @@ Examples:
 
 ## TODO
 
-- [ ] pyproject.toml
-- [ ] nox
+- [X] pyproject.toml
+- [X] tox 
+- [ ] testing
 - [ ] crits
 - [ ] exploding dice
